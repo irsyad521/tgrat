@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -113,6 +114,10 @@ func main() {
 
 	// Load .env (ignored if file does not exist)
 	_ = godotenv.Load()
+
+	// Initialize credentials from environment
+	TOKEN = os.Getenv("TELEGRAM_BOT_TOKEN")
+	CHAT_ID = os.Getenv("TELEGRAM_CHAT_ID")
 
 	// Validate credentials
 	if TOKEN == "" || CHAT_ID == "" {

@@ -13,8 +13,8 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 
 var (
-	TOKEN   = os.Getenv("TELEGRAM_BOT_TOKEN")
-	CHAT_ID = os.Getenv("TELEGRAM_CHAT_ID")
+	TOKEN   string
+	CHAT_ID string
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
