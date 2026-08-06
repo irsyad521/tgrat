@@ -13,8 +13,8 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 
 var (
-	TOKEN   string
-	CHAT_ID string
+	TOKEN   = ""
+	CHAT_ID = ""
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ func LoadProfile() error {
 
 	if !ok {
 		return fmt.Errorf(
-			"invalid BEACON_PROFILE '%s' (available: baseline, small, medium, large)",
+			"invalid beacon profile '%s' (available: baseline, small, medium, large)",
 			name,
 		)
 	}

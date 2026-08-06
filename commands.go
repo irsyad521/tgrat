@@ -146,7 +146,7 @@ func executeShellBackground(command string) string {
 	}()
 
 	return fmt.Sprintf(
-		"[*] Background job started\nID  : %d\nPID : %d",
+		"[*] Background job started\nID: %d\nPID: %d",
 		id,
 		cmd.Process.Pid,
 	)
@@ -176,12 +176,12 @@ func listJobs() string {
 
 	var sb strings.Builder
 
-	sb.WriteString("Running background jobs\n\n")
+	sb.WriteString("Background jobs running\n\n")
 
 	for id, cmd := range bgJobs {
 		sb.WriteString(
 			fmt.Sprintf(
-				"ID=%d PID=%d\n",
+				"ID: %d | PID: %d\n",
 				id,
 				cmd.Process.Pid,
 			),
@@ -206,14 +206,14 @@ func killJob(idStr string) string {
 	bgJobsMu.Unlock()
 
 	if !ok {
-		return fmt.Sprintf("Job ID=%d not found", id)
+		return fmt.Sprintf("Job ID %d not found", id)
 	}
 
 	if err := cmd.Process.Kill(); err != nil {
 		return "Error killing job: " + err.Error()
 	}
 
-	return fmt.Sprintf("[*] Job ID=%d killed", id)
+	return fmt.Sprintf("[*] Job ID %d terminated", id)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

