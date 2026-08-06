@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -13,8 +12,9 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 
 var (
-	TOKEN   = ""
-	CHAT_ID = ""
+	TOKEN          = ""
+	CHAT_ID        = ""
+	BEACON_PROFILE = "baseline"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -92,11 +92,7 @@ var Profile BeaconProfile
 
 func LoadProfile() error {
 
-	name := strings.ToLower(os.Getenv("BEACON_PROFILE"))
-
-	if name == "" {
-		name = "baseline"
-	}
+	name := strings.ToLower(BEACON_PROFILE)
 
 	p, ok := Profiles[name]
 

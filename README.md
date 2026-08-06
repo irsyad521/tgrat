@@ -75,89 +75,93 @@ tgrat/
 4. Copy the chat.id value from the JSON response
 ```
 
-### 2. Configure the Agent
+### 2. Configure Credentials
 
-Copy the example configuration:
+Create `.env` file with your Telegram credentials:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with your credentials:
 
 ```dotenv
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id
-
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
 BEACON_PROFILE=baseline
 ```
 
-### 3. Select Beacon Profile
+> **Note:** `.env` is used only for building the binary. Once built, the binary is completely standalone and does not require the `.env` file.
 
-Available profiles:
+### 3. Beacon Profiles
+
+Available beacon profiles that can be embedded at build time:
 
 | Profile | Description | Example Poll Interval* |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `baseline` | Fixed polling interval with no jitter. Produces highly consistent beacon traffic and serves as the baseline for detection validation. | `61s → 61s → 61s → 61s` |
-| `small` | Introduces a small amount of randomized delay while preserving a recognizable beacon pattern. Useful for evaluating basic jitter tolerance. | `59s → 64s → 61s → 66s` |
-| `medium` | Uses a wider random delay to reduce beacon consistency. Intended to simulate moderate timing variation commonly seen in real-world beaconing. | `48s → 73s → 58s → 82s` |
-| `large` | Applies the largest randomized delay, producing highly irregular beacon intervals. Useful for evaluating detection robustness against heavy jitter. | `35s → 97s → 54s → 76s` |
+| --- | --- | --- |
+| `baseline` | Fixed polling interval with no jitter. Produces consistent beacon traffic for baseline detection validation. | `61s → 61s → 61s → 61s` |
+| `small` | Small randomized delay while maintaining recognizable pattern. Good for basic jitter tolerance testing. | `59s → 64s → 61s → 66s` |
+| `medium` | Moderate random delay simulating real-world beaconing behavior. | `48s → 73s → 58s → 82s` |
+| `large` | Maximum randomized delay producing highly irregular intervals. Useful for robust detection evaluation. | `35s → 97s → 54s → 76s` |
 
-Example intervals are illustrative only. Actual polling intervals depend on the configured beacon profile and randomized jitter values.
+*Example intervals are illustrative only. Actual intervals depend on the beacon profile configuration.*
 
-Change the profile by modifying the `BEACON_PROFILE` value inside `.env`.
+### 4. Build the Agent
 
-### 4. Build
+The agent is built as a **standalone binary** with all configuration (credentials, beacon profile) embedded at build time. Once built, the binary requires no external files and can be deployed anywhere.
 
-The agent is built as a **standalone binary** with credentials embedded at build time. This means the binary does not require an external `.env` file and can be distributed independently.
-
-#### Option A: Using Build Script (Recommended)
+#### Quick Start (Recommended)
 
 ```bash
+# Build with .env credentials and default profile (baseline)
 ./build.sh
+
+# Build with .env credentials and custom profile
+BEACON_PROFILE=medium ./build.sh
+
+# Build with all custom values
+TELEGRAM_BOT_TOKEN=xxx TELEGRAM_CHAT_ID=yyy BEACON_PROFILE=large ./build.sh
 ```
 
-The script automatically:
-1. Loads credentials from `.env`
-2. Embeds them into the binary using `-ldflags`
-3. Produces a standalone `agent` binary
+#### Manual Build
 
-#### Option B: Manual Build
+Build for different platforms, embedding all configuration:
 
 **Linux:**
 ```bash
-go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent
+go build -ldflags "-X main.TOKEN=<TOKEN> -X main.CHAT_ID=<CHAT_ID> -X main.BEACON_PROFILE=small" -o agent
 ```
 
-**Windows (cross-compile):**
+**Windows:**
 ```bash
-GOOS=windows GOARCH=amd64 go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent.exe
+GOOS=windows GOARCH=amd64 go build -ldflags "-X main.TOKEN=<TOKEN> -X main.CHAT_ID=<CHAT_ID> -X main.BEACON_PROFILE=medium" -o agent.exe
 ```
 
-**macOS (cross-compile):**
+**macOS:**
 ```bash
-GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.TOKEN=<YOUR_BOT_TOKEN> -X main.CHAT_ID=<YOUR_CHAT_ID>" -o agent_macos
+GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.TOKEN=<TOKEN> -X main.CHAT_ID=<CHAT_ID> -X main.BEACON_PROFILE=large" -o agent_macos
 ```
 
-#### Option C: Run Without Building
+#### Development/Testing
 
-For development/testing:
+For testing without building:
+
 ```bash
 go mod tidy
 go run .
 ```
 
-> **Note:** Direct `go run` requires `.env` to be present in the working directory.
+This requires `.env` file in the working directory.
 
-#### Binary Portability
+#### Deployment
 
-Once built, the `agent` binary can be distributed and run on any compatible system without requiring the `.env` file:
+Once built, the binary is fully portable and standalone:
 
 ```bash
-# Copy to any directory
+# Copy to any system and run directly
 cp agent /tmp/
 cd /tmp
-./agent
+./agent  # Runs with embedded configuration
 ```
 
 ---
